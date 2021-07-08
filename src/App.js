@@ -62,19 +62,37 @@ class App extends Component {
 
     apiService
       .fetchImages(options)
+      .then(hits => this.setState({ images: hits }))
+
+      .catch(error => this.setState({ error }))
+      .finally(() => this.setState({ isLoading: false }));
+  };
+
+  onClickBtnLoadMore = () => {
+    const { page, searchQuery } = this.state;
+    const options = {
+      page,
+      searchQuery,
+    };
+
+    this.setState({ isLoading: true });
+
+    apiService
+      .fetchImages(options)
       .then(hits => {
-        // console.log(response.data.hits);
         this.setState(prevState => ({
           images: [...prevState.images, ...hits],
           page: prevState.page + 1,
         }));
+      })
+      .catch(error => this.setState({ error }))
+      .finally(() => {
+        this.setState({ isLoading: false });
         window.scrollTo({
           top: document.documentElement.scrollHeight,
           behavior: 'smooth',
         });
-      })
-      .catch(error => this.setState({ error }))
-      .finally(() => this.setState({ isLoading: false }));
+      });
   };
 
   render() {
@@ -96,7 +114,7 @@ class App extends Component {
         <ImageGallery images={images} onImgClick={this.onImgClick} />
 
         {images.length > 0 && !isLoading && (
-          <Button text={'Load more'} onClick={this.fetchImages} />
+          <Button text={'Load more'} onClick={this.onClickBtnLoadMore} />
         )}
       </Container>
     );
